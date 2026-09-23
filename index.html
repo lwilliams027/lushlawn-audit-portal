@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sales Audit</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { color-scheme: light; --bg:#f6f7f6; --card:#fff; --ink:#1b201d; --ink-2:#4b554f; --ink-3:#7d8780; --line:#e6eae7; --line-2:#d5dbd7;
+    --primary:#1f6b3a; --primary-2:#175630; --primary-soft:#e9f2ec; --crit:#b3261e; --crit-soft:#fbe9e7; --warn:#9a6700; --warn-soft:#fff4d6; --good:#1f6b3a; --good-soft:#e3f1e7; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  body { padding-bottom:40px; }
+  .top { background:#14301f; color:#fff; padding:calc(14px + env(safe-area-inset-top,0px)) 20px 14px; display:flex; align-items:center; gap:12px; }
+  .top .t { font-weight:600; font-size:16px; } .top .u { font-size:12px; color:rgba(255,255,255,.7); }
+  .top .spacer { flex:1; }
+  .top button { background:rgba(255,255,255,.14); color:#fff; border:1px solid rgba(255,255,255,.3); border-radius:8px; height:32px; padding:0 12px; font:inherit; font-size:13px; cursor:pointer; }
+  .wrap { max-width:860px; margin:0 auto; padding:18px 16px 0; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:14px; }
+  h1 { font-size:20px; margin:0 0 4px; } h2 { font-size:15px; margin:22px 0 10px; display:flex; align-items:center; gap:8px; }
+  h2 .n { font-size:11.5px; font-weight:600; padding:1px 8px; border-radius:999px; background:var(--primary-soft); color:var(--primary); }
+  p { margin:0 0 10px; color:var(--ink-2); }
+  label { display:block; font-size:12.5px; color:var(--ink-2); margin:10px 0 4px; }
+  input, textarea { width:100%; font:inherit; padding:9px 11px; border:1px solid var(--line-2); border-radius:8px; background:#fff; color:var(--ink); }
+  textarea { min-height:70px; resize:vertical; }
+  button.primary { background:var(--primary); color:#fff; border:0; border-radius:8px; height:38px; padding:0 16px; font:inherit; font-weight:600; cursor:pointer; }
+  button.primary:hover { background:var(--primary-2); }
+  button.ghost { background:#fff; color:var(--ink-2); border:1px solid var(--line-2); border-radius:8px; height:38px; padding:0 14px; font:inherit; font-weight:600; cursor:pointer; }
+  button.danger { background:#fff; color:var(--crit); border:1px solid #e8b8b3; border-radius:8px; height:38px; padding:0 14px; font:inherit; font-weight:600; cursor:pointer; }
+  button:disabled { opacity:.55; cursor:default; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px; }
+  .err { color:var(--crit); font-size:13px; margin-top:8px; } .ok { color:var(--good); font-size:13px; margin-top:8px; }
+  .empty { color:var(--ink-3); padding:8px 0 4px; }
+  .sale { border-left:4px solid var(--warn); }
+  .sale.critical { border-left-color:var(--crit); }
+  .sale-h { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .sale-h .acct { font-weight:700; font-size:15px; font-variant-numeric:tabular-nums; }
+  .sale-h .cust { color:var(--ink-2); } .sale-h .sold { font-size:12px; color:var(--ink-3); }
+  .sale-h .sp { flex:1; }
+  .tag { font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:2px 7px; border-radius:5px; white-space:nowrap; }
+  .tag.critical { background:var(--crit-soft); color:var(--crit); } .tag.major { background:var(--warn-soft); color:var(--warn); }
+  .tag.sent { background:var(--warn-soft); color:var(--warn); } .tag.fixed, .tag.closed { background:var(--good-soft); color:var(--good); } .tag.returned { background:var(--crit-soft); color:var(--crit); }
+  .lnk { display:inline-flex; align-items:center; gap:5px; height:28px; padding:0 10px; border:1px solid var(--line-2); border-radius:6px; background:#fff; color:var(--ink-2); font-size:12px; font-weight:600; text-decoration:none; }
+  .lnk:hover { border-color:var(--primary); color:var(--primary); }
+  .issue { padding:10px 0; border-top:1px solid var(--line); }
+  .issue .what { font-weight:600; display:flex; gap:8px; align-items:flex-start; }
+  .issue .what .rule { flex:none; margin-left:auto; font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:2px 7px; border-radius:5px; }
+  .issue .what .rule.critical { background:var(--crit-soft); color:var(--crit); } .issue .what .rule.major { background:var(--warn-soft); color:var(--warn); }
+  details { margin-top:4px; } summary { font-size:12px; font-weight:600; color:var(--ink-3); cursor:pointer; }
+  .more { margin:6px 0 0; color:var(--ink-2); font-size:13px; } .fix { margin:6px 0 0; color:var(--ink-2); font-size:13px; padding-left:14px; position:relative; }
+  .fix::before { content:"→"; position:absolute; left:0; color:var(--primary); font-weight:700; }
+  dl { display:grid; grid-template-columns:72px 1fr; gap:2px 10px; margin:8px 0 0; padding:8px 10px; font-size:12px; background:var(--bg); border-radius:8px; } dt { color:var(--ink-3); } dd { margin:0; color:var(--ink-2); word-break:break-word; }
+  .note { background:var(--bg); border-radius:8px; padding:8px 10px; font-size:13px; color:var(--ink-2); margin-top:8px; }
+  .note b { color:var(--ink); }
+  .foot { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:10px; padding-top:10px; border-top:1px solid var(--line); font-size:12.5px; color:var(--ink-3); }
+  .foot .sp { flex:1; }
+  .tabs { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 14px; }
+  .tabs button { background:#fff; border:1px solid var(--line-2); border-radius:999px; height:32px; padding:0 12px; font:inherit; font-size:13px; cursor:pointer; color:var(--ink-2); }
+  .tabs button.on { background:var(--primary-soft); border-color:var(--primary); color:var(--primary); font-weight:600; }
+  .toast { position:fixed; left:50%; bottom:calc(18px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); background:#1b201d; color:#fff; padding:10px 16px; border-radius:10px; font-size:13px; opacity:0; transition:opacity .25s; pointer-events:none; max-width:90vw; }
+  .toast.show { opacity:1; }
+  .credit { text-align:center; font-size:11.5px; color:var(--ink-3); margin-top:26px; }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<div class="top"><div><div class="t">Sales Audit</div><div class="u" id="company"></div></div><span class="spacer"></span><span class="u" id="who"></span><button id="signout" hidden>Sign out</button></div>
+<div class="wrap">
+  <div id="setup" class="card" hidden><h1>Portal not configured</h1><p>Copy <code>config.example.js</code> to <code>config.js</code> next to this page and fill in the Supabase URL and anon key.</p></div>
+
+  <div id="login" class="card" hidden>
+    <h1>Sign in</h1>
+    <p>Use the email your invite was sent to.</p>
+    <label>Email<input id="l-email" type="email" autocomplete="username"></label>
+    <label>Password<input id="l-pass" type="password" autocomplete="current-password"></label>
+    <div class="row"><button class="primary" id="l-go">Sign in</button><button class="ghost" id="l-forgot">Forgot password</button></div>
+    <div class="err" id="l-err"></div><div class="ok" id="l-ok"></div>
+  </div>
+
+  <div id="setpw" class="card" hidden>
+    <h1>Create your password</h1>
+    <p id="setpw-hint">Welcome — choose a password for your account. You will use it to see sales sent to you.</p>
+    <label>New password (8 or more characters)<input id="p-pass" type="password" autocomplete="new-password"></label>
+    <label>Again<input id="p-pass2" type="password" autocomplete="new-password"></label>
+    <div class="row"><button class="primary" id="p-go">Save password</button></div>
+    <div class="err" id="p-err"></div>
+  </div>
+
+  <div id="main" hidden>
+    <div id="banner" class="card" hidden></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="list"></div>
+  </div>
+  <div class="credit">Built by Williams System L.L.C.</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var cfg = window.PORTAL_CONFIG || {};
+  $('#company').textContent = cfg.company || '';
+  if (!cfg.url || !cfg.anonKey || /xxxx\.supabase\.co/.test(cfg.url)) { $('#setup').hidden = false; return; }
+  if (!window.supabase) { $('#setup').hidden = false; $('#setup').innerHTML = '<h1>Could not load</h1><p>The Supabase library did not load. Check the internet connection and reload.</p>'; return; }
+
+  // The invite / password-reset link lands here with the type in the hash;
+  // read it before the client consumes the hash.
+  var urlType = (location.hash.match(/type=(\w+)/) || [])[1] || '';
+  var sb = supabase.createClient(cfg.url, cfg.anonKey, { auth: { persistSession: true, detectSessionInUrl: true, autoRefreshToken: true } });
+
+  var me = null, items = [], tab = 'todo', lastOpenCount = null, pollTimer = null;
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var when = function (iso) { if (!iso) return ''; var d = new Date(iso); return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }); };
+  var toastTimer = null;
+  function toast(text) { var t = $('#toast'); t.textContent = text; t.className = 'toast show'; clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.className = 'toast'; }, 2600); }
+  function show(id) { ['setup', 'login', 'setpw', 'main'].forEach(function (k) { $('#' + k).hidden = k !== id; }); }
+
+  /* ── Auth ── */
+  $('#l-go').addEventListener('click', signIn);
+  $('#l-pass').addEventListener('keydown', function (e) { if (e.key === 'Enter') signIn(); });
+  function signIn() {
+    $('#l-err').textContent = ''; $('#l-ok').textContent = '';
+    sb.auth.signInWithPassword({ email: $('#l-email').value.trim(), password: $('#l-pass').value }).then(function (r) {
+      if (r.error) { $('#l-err').textContent = r.error.message === 'Invalid login credentials' ? 'That email and password do not match.' : r.error.message; return; }
+      start();
+    });
+  }
+  $('#l-forgot').addEventListener('click', function () {
+    var email = $('#l-email').value.trim();
+    if (!email) { $('#l-err').textContent = 'Type your email first.'; return; }
+    sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname }).then(function (r) {
+      if (r.error) { $('#l-err').textContent = r.error.message; return; }
+      $('#l-err').textContent = ''; $('#l-ok').textContent = 'Check your email for a link to set a new password.';
+    });
+  });
+  $('#p-go').addEventListener('click', function () {
+    var a = $('#p-pass').value, b = $('#p-pass2').value;
+    $('#p-err').textContent = '';
+    if (a.length < 8) { $('#p-err').textContent = 'Use at least 8 characters.'; return; }
+    if (a !== b) { $('#p-err').textContent = 'The two passwords do not match.'; return; }
+    sb.auth.updateUser({ password: a, data: { password_set: true } }).then(function (r) {
+      if (r.error) { $('#p-err').textContent = r.error.message; return; }
+      urlType = '';
+      toast('Password saved.');
+      start();
+    });
+  });
+  $('#signout').addEventListener('click', function () { sb.auth.signOut().then(function () { me = null; items = []; $('#signout').hidden = true; $('#who').textContent = ''; show('login'); }); });
+  sb.auth.onAuthStateChange(function (event) { if (event === 'PASSWORD_RECOVERY') { urlType = 'recovery'; show('setpw'); } });
+
+  function start() {
+    sb.auth.getSession().then(function (r) {
+      var session = r.data && r.data.session;
+      if (!session) { show('login'); return; }
+      var user = session.user, meta = user.user_metadata || {};
+      if (urlType === 'invite' || urlType === 'recovery' || urlType === 'signup' || !meta.password_set) {
+        $('#setpw-hint').textContent = urlType === 'recovery' ? 'Choose a new password.' : 'Welcome — choose a password for your account. You will use it to see sales sent to you.';
+        show('setpw');
+        return;
+      }
+      return sb.from('profiles').select('*').eq('id', user.id).maybeSingle().then(function (p) {
+        me = p.data || { id: user.id, email: user.email, name: meta.name || user.email, role: meta.role || 'rep' };
+        $('#who').textContent = (me.name || me.email) + (me.role === 'admin' ? ' · auditor' : '');
+        $('#signout').hidden = false;
+        show('main');
+        tab = me.role === 'admin' ? 'returned' : 'todo';
+        listen();
+        return load();
+      });
+    }).catch(function (e) { $('#l-err').textContent = e.message; show('login'); });
+  }
+
+  /* ── Data ── */
+  function load() {
+    return sb.from('audit_items').select('*').order('sent_at', { ascending: false }).then(function (r) {
+      if (r.error) { $('#banner').hidden = false; $('#banner').innerHTML = '<div class="err">' + esc(r.error.message) + '</div>'; return; }
+      items = r.data || [];
+      var open = items.filter(function (i) { return me.role === 'admin' ? i.status === 'returned' : i.status === 'sent'; }).length;
+      if (lastOpenCount !== null && open > lastOpenCount) {
+        toast(me.role === 'admin' ? 'A sale was returned to you.' : 'A new sale was sent to you.');
+        if (window.Notification && Notification.permission === 'granted') { try { new Notification('Sales Audit', { body: me.role === 'admin' ? 'A sale was returned to you.' : 'A new sale needs a fix.' }); } catch (e) {} }
+      }
+      lastOpenCount = open;
+      document.title = (open ? '(' + open + ') ' : '') + 'Sales Audit';
+      render();
+    });
+  }
+  function listen() {
+    try {
+      sb.channel('audit-items').on('postgres_changes', { event: '*', schema: 'public', table: 'audit_items' }, function () { load(); }).subscribe();
+    } catch (e) { /* realtime off — polling covers it */ }
+    clearInterval(pollTimer);
+    pollTimer = setInterval(load, 60000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) load(); });
+    if (window.Notification && Notification.permission === 'default') { try { Notification.requestPermission(); } catch (e) {} }
+  }
+
+  /* ── Render ── */
+  var TABS_REP = [['todo', 'To fix', 'sent'], ['returned', 'Waiting on auditor', 'returned'], ['done', 'Done', 'fixed,closed']];
+  var TABS_ADMIN = [['returned', 'Returned to you', 'returned'], ['sent', 'With reps', 'sent'], ['done', 'Done', 'fixed,closed']];
+  function render() {
+    var tabs = me.role === 'admin' ? TABS_ADMIN : TABS_REP;
+    $('#tabs').innerHTML = tabs.map(function (t) {
+      var n = items.filter(function (i) { return t[2].split(',').indexOf(i.status) >= 0; }).length;
+      return '<button data-tab="' + t[0] + '" class="' + (tab === t[0] ? 'on' : '') + '">' + t[1] + (n ? ' · ' + n : '') + '</button>';
+    }).join('');
+    [].forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.addEventListener('click', function () { tab = b.getAttribute('data-tab'); render(); }); });
+    var def = tabs.filter(function (t) { return t[0] === tab; })[0] || tabs[0];
+    var rows = items.filter(function (i) { return def[2].split(',').indexOf(i.status) >= 0; });
+    if (!rows.length) {
+      var msg = def[0] === 'todo' ? '✓ Nothing to fix right now.' : def[0] === 'returned' && me.role === 'admin' ? '✓ Nothing returned.' : 'Nothing here yet.';
+      $('#list').innerHTML = '<div class="card empty">' + msg + '</div>';
+      return;
+    }
+    $('#list').innerHTML = rows.map(card).join('');
+    [].forEach.call(document.querySelectorAll('#list [data-act]'), function (b) { b.addEventListener('click', function () { act(b.getAttribute('data-id'), b.getAttribute('data-act')); }); });
+  }
+  var STATUS = { sent: 'To fix', fixed: 'Fixed', returned: 'Returned', closed: 'Closed' };
+  function card(i) {
+    var issues = (i.issues || []).map(function (f) {
+      var raw = [];
+      if (f.seen) raw.push('<dt>Seen</dt><dd>' + esc(f.seen) + '</dd>');
+      if (f.expected) raw.push('<dt>Should be</dt><dd>' + esc(f.expected) + '</dd>');
+      if (f.note) raw.push('<dt>Note</dt><dd>' + (/^https:\/\//.test(f.note) ? '<a class="lnk" target="_blank" rel="noopener" href="' + esc(f.note) + '">Open record</a>' : esc(f.note)) + '</dd>');
+      var box = (f.more ? '<p class="more">' + esc(f.more) + '</p>' : '') + (f.fix ? '<div class="fix">' + esc(f.fix) + '</div>' : '') + (raw.length ? '<dl>' + raw.join('') + '</dl>' : '');
+      return '<div class="issue"><div class="what"><span>' + esc(f.what) + '</span><span class="rule ' + esc(f.severity) + '">' + esc(f.rule) + '</span></div>' + (box ? '<details><summary>Details</summary>' + box + '</details>' : '') + '</div>';
+    }).join('');
+    var links = i.links || {};
+    var open = (links.hubspotDeal ? '<a class="lnk" target="_blank" rel="noopener" href="' + esc(links.hubspotDeal) + '">HubSpot</a>' : '') + (links.realGreen ? '<a class="lnk" target="_blank" rel="noopener" href="' + esc(links.realGreen) + '">Real Green</a>' : '');
+    var notes = (i.admin_note ? '<div class="note"><b>From the auditor:</b> ' + esc(i.admin_note) + '</div>' : '') + (i.rep_note ? '<div class="note"><b>' + esc(i.rep_name.split(' ')[0]) + ' said:</b> ' + esc(i.rep_note) + '</div>' : '');
+    var actions = '';
+    if (i.status === 'sent' && (me.role !== 'admin' || i.rep_id === me.id)) {
+      actions = '<label>Note (needed if it cannot be fixed)<textarea id="n-' + i.id + '" placeholder="What you did, or what stopped the fix"></textarea></label>' +
+        '<div class="row"><button class="primary" data-act="fixed" data-id="' + i.id + '">Fixed</button><button class="danger" data-act="returned" data-id="' + i.id + '">Not fixable / error</button></div>';
+    } else if (i.status === 'returned' && me.role === 'admin') {
+      actions = '<label>Note to ' + esc(i.rep_name.split(' ')[0]) + ' (optional)<textarea id="n-' + i.id + '"></textarea></label>' +
+        '<div class="row"><button class="primary" data-act="close" data-id="' + i.id + '">Close — nothing more to do</button><button class="ghost" data-act="resend" data-id="' + i.id + '">Send back to ' + esc(i.rep_name.split(' ')[0]) + '</button></div>';
+    }
+    var stamp = i.status === 'sent' ? 'Sent ' + when(i.sent_at) : STATUS[i.status] + ' ' + when(i.resolved_at || i.updated_at);
+    return '<div class="card sale ' + esc(i.severity) + '"><div class="sale-h"><span class="acct">#' + esc(i.account_number || '—') + '</span><span class="cust">' + esc(i.customer_name || '') + '</span><span class="sp"></span>' + open + '<span class="sold">Sold ' + esc(i.sale_date) + '</span><span class="tag ' + esc(i.status) + '">' + esc(STATUS[i.status] || i.status) + '</span></div>' +
+      (me.role === 'admin' ? '<div class="sold" style="margin-top:4px;font-size:12px;color:var(--ink-3)">Rep: ' + esc(i.rep_name) + '</div>' : '') +
+      issues + notes + actions + '<div class="foot"><span>' + esc(stamp) + '</span><span class="sp"></span><span>' + (i.issues || []).length + ' issue' + ((i.issues || []).length === 1 ? '' : 's') + '</span></div></div>';
+  }
+
+  function act(id, action) {
+    var noteEl = document.getElementById('n-' + id), note = noteEl ? noteEl.value.trim() : '';
+    var buttons = document.querySelectorAll('[data-id="' + id + '"]');
+    [].forEach.call(buttons, function (b) { b.disabled = true; });
+    var call = (action === 'fixed' || action === 'returned')
+      ? sb.rpc('resolve_audit_item', { p_id: id, p_outcome: action, p_note: note || null })
+      : sb.rpc('review_audit_item', { p_id: id, p_action: action, p_note: note || null });
+    call.then(function (r) {
+      if (r.error) { toast(r.error.message); [].forEach.call(buttons, function (b) { b.disabled = false; }); return; }
+      toast(action === 'fixed' ? 'Marked fixed. Thanks!' : action === 'returned' ? 'Sent back to the auditor.' : action === 'close' ? 'Closed.' : 'Sent back to the rep.');
+      return load();
+    });
+  }
+
+  start();
+})();
+</script>
+</body>
+</html>
