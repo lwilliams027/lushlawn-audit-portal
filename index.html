@@ -107,7 +107,7 @@
 
   // The invite / password-reset link lands here with the type in the hash;
   // read it before the client consumes the hash.
-  var urlType = (location.hash.match(/type=(\w+)/) || [])[1] || '';
+  var urlType = (location.hash.match(/(?:^#|&)type=(\w+)/) || [])[1] || ''; // not token_type=
   var sb = supabase.createClient(cfg.url, cfg.anonKey, { auth: { persistSession: true, detectSessionInUrl: true, autoRefreshToken: true } });
 
   var me = null, items = [], tab = 'todo', lastOpenCount = null, pollTimer = null;
